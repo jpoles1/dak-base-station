@@ -105,6 +105,14 @@ void loop() {
                     openWindow();
                 }
             }
+            if(deviceName == "window" && fname == "color"){
+                if(command == "dim"){
+                    closeWindow();
+                }
+                if(command == "bright"){
+                    openWindow();
+                }
+            }
         }
         data = "";
     } else {
