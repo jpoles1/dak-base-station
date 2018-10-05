@@ -16,19 +16,20 @@
 WebSocketClient webSocketClient;
 WiFiClient client;
 Servo contServo;
-bool windowState = 0;
+const int turnTime = 3000;
 
 void wifiCheck(){
     if(WiFi.status() != WL_CONNECTED){
         Serial.print("Connecting to WiFi...");
     }
     while (WiFi.status() != WL_CONNECTED) {
-        delay(1000);
+        delay(500);
         Serial.print(".");
     }
     Serial.println("");
 }
 void websocketLoad() {
+    wifiCheck();
     if (client.connect(WEBSOCKET_URL, 80)) {
         Serial.println("Connected");
     } else {
@@ -57,7 +58,6 @@ void setup() {
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, HIGH);
     WiFi.begin(AP_SSID, AP_PASSWORD);
-    wifiCheck();    
     websocketLoad();
     digitalWrite(LED_PIN, LOW);
 }
@@ -77,18 +77,12 @@ std::vector<String> splitStringToVector(String msg, char delim){
 
 void openWindow(){
     Serial.println("Opening Window!");
-    if(windowState  == 0) {
-        turnServo(180, 3000);
-        windowState = 1;
-    }
+    turnServo(180, turnTime);
 }
 
 void closeWindow(){
     Serial.println("Closing Window!");
-    if(windowState  == 1) {
-        turnServo(0, 3000);
-        windowState = 0;
-    }
+    turnServo(0, turnTime);
 }
 
 String data;
