@@ -1,65 +1,63 @@
-#include <Arduino.h>
-#include <Servo.h>
-#include "ESP8266WiFi.h"
-#include <WebSocketClient.h>
-
-#include <Arduino.h>
-
 //Private Config
 #include "config.h"
 
+//Libs
+#include "WiFi.h"
+#include <WebSocketClient.h>
+#include "RCSwitch.h"
+#include <oled_log.h>
+
 //Pins
-#define SERVO_PIN D0
-#define LED_PIN D3
+#define TRANSMITTER_PIN 16
 
 //Global variables
 WebSocketClient webSocketClient;
 WiFiClient client;
-Servo contServo;
-const int turnTime = 3000;
+RCSwitch transmitter433 = RCSwitch();
 
 void wifiCheck(){
     if(WiFi.status() != WL_CONNECTED){
-        Serial.print("Connecting to WiFi...");
+        displayString("Connecting to WiFi...", false);
     }
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
-        Serial.print(".");
+        displayString(".", false);
     }
-    Serial.println("");
+    displayString(" ");
 }
+
 void websocketLoad() {
     wifiCheck();
     if (client.connect(WEBSOCKET_URL, 80)) {
-        Serial.println("Connected");
+        displayString("WebSocket connected!");
     } else {
-        Serial.println("Connection failed.");
+        displayString("WebSocket connection failed!");
     }
     
     webSocketClient.path = "/";
     webSocketClient.host = strdup(WEBSOCKET_URL);
     if (webSocketClient.handshake(client)) {
-        Serial.println("Handshake successful");
+        displayString("WebSocket handshake successful!");
     } else {
-        Serial.println("Handshake failed.");
+        displayString("WebSocket handshake failed!");
     }
 }
 
-void turnServo(int speed, int duration){
-    contServo.attach(SERVO_PIN);
-    contServo.write(speed);
-    delay(duration);
-    contServo.write(90);
-    contServo.detach();
-}
-
 void setup() {
-    Serial.begin(9600);
-    pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, HIGH);
+    Serial.begin(115200);
+    delay(10);
+    //Setup OLED display
+    display.init();
+    // display.flipScreenVertically();
+    display.setContrast(255);
+    display.setLogBuffer(5, 30);
+    //Setup 433 mhz transmitter
+    transmitter433.enableTransmit(TRANSMITTER_PIN);
+    transmitter433.setPulseLength(140);
+    transmitter433.setRepeatTransmit(5);
+    //Setup wifi
     WiFi.begin(AP_SSID, AP_PASSWORD);
     websocketLoad();
-    digitalWrite(LED_PIN, LOW);
 }
 
 std::vector<String> splitStringToVector(String msg, char delim){
@@ -75,14 +73,41 @@ std::vector<String> splitStringToVector(String msg, char delim){
   return subStrings;
 }
 
-void openWindow(){
-    Serial.println("Opening Window!");
-    turnServo(180, turnTime);
+void send433(std::string command_code, int nRepeat=4, int delayTime = 50) {
+    char* code = strdup(command_code.c_str());
+    for (int i=0; i<nRepeat; i++) {
+        transmitter433.send(code);
+        delay(delayTime);
+    }
+    free(code);
 }
 
-void closeWindow(){
-    Serial.println("Closing Window!");
-    turnServo(0, turnTime);
+std::string getTransmitterCode(std::string deviceName, std::string command) {
+    if (deviceName == "1") {
+        if(command=="on") {
+            return "0100000000010101001100110";
+        }
+        else if(command=="off") {
+            return "0100000000010101001111000";
+        }
+    }
+    else if (deviceName == "2") {
+        if(command=="on") {
+            return "0100000000010101110000110";
+        }
+        else if(command=="off") {
+            return "0100000000010101110011000";
+        }
+    }
+    else if (deviceName == "3") {
+        if(command=="on") {
+            return "0100000000010111000000110";
+        }
+        else if(command=="off") {
+            return "0100000000010111000011000";
+        }
+    }
+    return "";
 }
 
 String data;
@@ -90,33 +115,26 @@ void loop() {
     if (client.connected()) {
         webSocketClient.getData(data);
         if (data.length() > 0) {
-            Serial.print("Received data: ");
-            Serial.println(data);
             std::vector<String> split_string = splitStringToVector(data.c_str(), ':');
             String msgType = split_string[0];
             String deviceName = split_string[1];
             String fname = split_string[2];
             String command = split_string[3];
-            if(deviceName == "window" && fname == "power"){
-                if(command == "off"){
-                    closeWindow();
-                }
-                if(command == "on"){
-                    openWindow();
-                }
-            }
-            if(deviceName == "window" && fname == "color"){
-                if(command == "dim"){
-                    closeWindow();
-                }
-                if(command == "bright"){
-                    openWindow();
+            displayString(deviceName.c_str(), false);
+            displayString(" - ", false);
+            displayString(fname.c_str(), false);
+            displayString(" - ", false);
+            displayString(command.c_str());
+            if(fname == "power") {
+                std::string code = getTransmitterCode(deviceName.c_str(), command.c_str());
+                if(code != "") {
+                    send433(code);
                 }
             }
         }
         data = "";
     } else {
-        Serial.println("Client disconnected.");
+        displayString("Client disconnected.");
         websocketLoad();
     }
 }
