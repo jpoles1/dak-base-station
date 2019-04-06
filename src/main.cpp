@@ -56,6 +56,8 @@ void setup() {
     transmitter433.setPulseLength(140);
     transmitter433.setRepeatTransmit(5);
     //Setup wifi
+    uint8_t new_mac[8] = {0x84,0x3A,0x4B,0xC8,0xE9,0x00};
+    esp_base_mac_addr_set(new_mac);
     WiFi.begin(AP_SSID, AP_PASSWORD);
     websocketLoad();
 }
