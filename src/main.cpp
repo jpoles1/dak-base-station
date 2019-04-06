@@ -85,25 +85,31 @@ void send433(std::string command_code, int nRepeat=4, int delayTime = 50) {
 std::string getTransmitterCode(std::string deviceName, std::string command) {
     if (deviceName == "1") {
         if(command=="on") {
+            //8399462
             return "0100000000010101001100110";
         }
         else if(command=="off") {
+            //8399480
             return "0100000000010101001111000";
         }
     }
     else if (deviceName == "2") {
         if(command=="on") {
+            //8399750
             return "0100000000010101110000110";
         }
         else if(command=="off") {
+            //8399768
             return "0100000000010101110011000";
         }
     }
     else if (deviceName == "3") {
         if(command=="on") {
+            //8400390
             return "0100000000010111000000110";
         }
         else if(command=="off") {
+            //8400408
             return "0100000000010111000011000";
         }
     }
