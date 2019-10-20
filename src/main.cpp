@@ -40,7 +40,7 @@ void websocketLoad() {
         displayString("WebSocket connection failed!");
     }
     
-    webSocketClient.path = "/";
+    webSocketClient.path = (char*)"/";
     webSocketClient.host = strdup(WEBSOCKET_URL);
     if (webSocketClient.handshake(client)) {
         displayString("WebSocket handshake successful!");
@@ -137,20 +137,24 @@ void loop() {
     if (client.connected()) {
         webSocketClient.getData(data);
         if (data.length() > 0) {
-            std::vector<String> split_string = splitStringToVector(data.c_str(), ':');
-            String msgType = split_string[0];
-            String deviceName = split_string[1];
-            String fname = split_string[2];
-            String command = split_string[3];
-            displayString(deviceName.c_str(), false);
-            displayString(" - ", false);
-            displayString(fname.c_str(), false);
-            displayString(" - ", false);
-            displayString(command.c_str());
-            if(fname == "power") {
-                std::string code = getTransmitterCode(deviceName.c_str(), command.c_str());
-                if(code != "") {
-                    send433(code);
+            if (data == "ping") {
+                webSocketClient.sendData("pong");
+            } else {
+                std::vector<String> split_string = splitStringToVector(data.c_str(), ':');
+                String msgType = split_string[0];
+                String deviceName = split_string[1];
+                String fname = split_string[2];
+                String command = split_string[3];
+                displayString(deviceName.c_str(), false);
+                displayString(" - ", false);
+                displayString(fname.c_str(), false);
+                displayString(" - ", false);
+                displayString(command.c_str());
+                if(fname == "power") {
+                    std::string code = getTransmitterCode(deviceName.c_str(), command.c_str());
+                    if(code != "") {
+                        send433(code);
+                    }
                 }
             }
         }
