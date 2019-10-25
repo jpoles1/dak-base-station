@@ -39,8 +39,8 @@ void websocketLoad() {
     } else {
         displayString("WebSocket connection failed!");
     }
-    
-    webSocketClient.path = (char*)"/";
+    String wsURL = String("/sync?room=jp-bedroom&key=") + SERVER_KEY;
+    webSocketClient.path = const_cast<char*>(wsURL.c_str());
     webSocketClient.host = strdup(WEBSOCKET_URL);
     if (webSocketClient.handshake(client)) {
         displayString("WebSocket handshake successful!");
