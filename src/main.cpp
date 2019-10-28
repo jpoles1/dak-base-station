@@ -112,7 +112,7 @@ void onMessage(WebsocketsMessage msg) {
 }
 void websocketLoad() {
     wifiCheck();
-    String wsURL = String("/sync?room=jp-bedroom&key=") + SERVER_KEY;
+    String wsURL = String("/sync?room=") + SERVER_ROOMNAME + String("&key=") + SERVER_KEY;
     if (wsClient.connect(WEBSOCKET_URL, 80, wsURL)) {
         displayString("WS connected!");
     } else {
