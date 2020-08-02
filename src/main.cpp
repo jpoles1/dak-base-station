@@ -70,6 +70,16 @@ std::string getTransmitterCode(std::string deviceName, std::string command) {
             return "0100000000010111000011000";
         }
     }
+    else if (deviceName == "4") {
+        if(command=="on") {
+            //5566771
+            return "0101010011110001001100110";
+        }
+        else if(command=="off") {
+            //5566789
+            return "0101010011110001001111000";
+        }
+    }
     return "";
 }
 
