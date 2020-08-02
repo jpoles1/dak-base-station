@@ -146,15 +146,17 @@ void setup() {
     //Setup wifi
     //uint8_t new_mac[8] = {0x39,0xAE,0xA4,0x16,0x1F,0x08};
     //esp_base_mac_addr_set(new_mac);
-    WiFi.disconnect(true);  //disconnect form wifi to set new wifi connection
+    //PEAP Authentication
+    /*WiFi.disconnect(true);  //disconnect form wifi to set new wifi connection
     WiFi.mode(WIFI_STA); //init wifi mode
     esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)EAP_IDENTITY, strlen(EAP_IDENTITY)); //provide identity
     esp_wifi_sta_wpa2_ent_set_username((uint8_t *)EAP_IDENTITY, strlen(EAP_IDENTITY)); //provide username --> identity and username is same
     esp_wifi_sta_wpa2_ent_set_password((uint8_t *)EAP_PASSWORD, strlen(EAP_PASSWORD)); //provide password
     esp_wpa2_config_t config = WPA2_CONFIG_INIT_DEFAULT(); //set config settings to default
     esp_wifi_sta_wpa2_ent_enable(&config); //set config settings to enable function
-    WiFi.begin(AP_SSID);
+    WiFi.begin(AP_SSID);*/
     //WiFi.setHostname("ESPDAK");
+    WiFi.begin(AP_SSID, AP_PASSWORD);
     websocketLoad();
 }
 
